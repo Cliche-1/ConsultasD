@@ -36,16 +36,6 @@ export default function AppLayout({ children }: Props) {
                         >
                             Ingreso de Datos
                         </Link>
-                        <Link
-                            href="/personas"
-                            className={`flex-1 text-center py-4 text-sm font-medium transition-colors ${
-                                url === '/personas'
-                                    ? 'bg-white text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                            }`}
-                        >
-                            Listado General
-                        </Link>
                     </div>
 
                     {/* Content */}

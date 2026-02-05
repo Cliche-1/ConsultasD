@@ -12,31 +12,30 @@ export default function Edit({ persona, departamentos }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         dni: persona.dni,
         nombres: persona.nombres,
-        apellidoPaterno: persona.apellidoPaterno,
-        apellidoMaterno: persona.apellidoMaterno,
+        apellido_paterno: persona.apellido_paterno,
+        apellido_materno: persona.apellido_materno,
         distrito_id: persona.distrito_id.toString(),
     });
 
-    const [selectedDpto, setSelectedDpto] = useState(persona.departamento?.departamento || '');
-    const [selectedProv, setSelectedProv] = useState(persona.departamento?.provincia || '');
+    // Cargar valores iniciales desde la relación anidada
+    const [selectedDpto, setSelectedDpto] = useState(persona.distrito?.provincia?.departamento?.nombre || '');
+    const [selectedProv, setSelectedProv] = useState(persona.distrito?.provincia?.nombre || '');
 
     const uniqueDptos = useMemo(() => {
-        return [...new Set(departamentos.map((d) => d.departamento))].sort();
+        return departamentos.map(d => d.nombre).sort();
     }, [departamentos]);
 
     const filteredProvs = useMemo(() => {
         if (!selectedDpto) return [];
-        const provs = departamentos
-            .filter((d) => d.departamento === selectedDpto)
-            .map((d) => d.provincia);
-        return [...new Set(provs)].sort();
+        const dpto = departamentos.find(d => d.nombre === selectedDpto);
+        return dpto?.provincias?.map(p => p.nombre).sort() || [];
     }, [selectedDpto, departamentos]);
 
     const filteredDistritos = useMemo(() => {
         if (!selectedProv) return [];
-        return departamentos
-            .filter((d) => d.departamento === selectedDpto && d.provincia === selectedProv)
-            .sort((a, b) => a.distrito.localeCompare(b.distrito));
+        const dpto = departamentos.find(d => d.nombre === selectedDpto);
+        const prov = dpto?.provincias?.find(p => p.nombre === selectedProv);
+        return prov?.distritos?.sort((a, b) => a.nombre.localeCompare(b.nombre)) || [];
     }, [selectedProv, selectedDpto, departamentos]);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -53,7 +52,7 @@ export default function Edit({ persona, departamentos }: Props) {
                         <h2 className="text-xl font-bold text-gray-800 mb-2">Editar Registro</h2>
                         <p className="text-sm text-gray-500">Actualice la información de la persona seleccionada.</p>
                     </div>
-                    <Link href="/personas" className="text-sm text-blue-600 hover:underline font-medium">
+                    <Link href="/consultas/dni" className="text-sm text-blue-600 hover:underline font-medium">
                         Cancelar y Volver
                     </Link>
                 </div>
@@ -93,24 +92,24 @@ export default function Edit({ persona, departamentos }: Props) {
                             <input
                                 type="text"
                                 className={`w-full p-3 border rounded-lg focus:ring-2 outline-none transition-all shadow-sm ${
-                                    errors.apellidoPaterno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
+                                    errors.apellido_paterno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
                                 }`}
-                                value={data.apellidoPaterno}
-                                onChange={(e) => setData('apellidoPaterno', e.target.value)}
+                                value={data.apellido_paterno}
+                                onChange={(e) => setData('apellido_paterno', e.target.value)}
                             />
-                            {errors.apellidoPaterno && <p className="text-red-500 text-xs font-medium">{errors.apellidoPaterno}</p>}
+                            {errors.apellido_paterno && <p className="text-red-500 text-xs font-medium">{errors.apellido_paterno}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Apellido Materno</label>
                             <input
                                 type="text"
                                 className={`w-full p-3 border rounded-lg focus:ring-2 outline-none transition-all shadow-sm ${
-                                    errors.apellidoMaterno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
+                                    errors.apellido_materno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
                                 }`}
-                                value={data.apellidoMaterno}
-                                onChange={(e) => setData('apellidoMaterno', e.target.value)}
+                                value={data.apellido_materno}
+                                onChange={(e) => setData('apellido_materno', e.target.value)}
                             />
-                            {errors.apellidoMaterno && <p className="text-red-500 text-xs font-medium">{errors.apellidoMaterno}</p>}
+                            {errors.apellido_materno && <p className="text-red-500 text-xs font-medium">{errors.apellido_materno}</p>}
                         </div>
                     </div>
 
@@ -129,8 +128,8 @@ export default function Edit({ persona, departamentos }: Props) {
                                     }}
                                 >
                                     <option value="">Seleccione</option>
-                                    {uniqueDptos.map((dpto) => (
-                                        <option key={dpto} value={dpto}>{dpto}</option>
+                                    {uniqueDptos.map((nombre) => (
+                                        <option key={nombre} value={nombre}>{nombre}</option>
                                     ))}
                                 </select>
                             </div>
@@ -146,8 +145,8 @@ export default function Edit({ persona, departamentos }: Props) {
                                     }}
                                 >
                                     <option value="">Seleccione</option>
-                                    {filteredProvs.map((prov) => (
-                                        <option key={prov} value={prov}>{prov}</option>
+                                    {filteredProvs.map((nombre) => (
+                                        <option key={nombre} value={nombre}>{nombre}</option>
                                     ))}
                                 </select>
                             </div>
@@ -163,7 +162,7 @@ export default function Edit({ persona, departamentos }: Props) {
                                 >
                                     <option value="">Seleccione</option>
                                     {filteredDistritos.map((dist) => (
-                                        <option key={dist.id} value={dist.id}>{dist.distrito}</option>
+                                        <option key={dist.id} value={dist.id}>{dist.nombre}</option>
                                     ))}
                                 </select>
                                 {errors.distrito_id && <p className="text-red-500 text-[10px] font-medium">{errors.distrito_id}</p>}

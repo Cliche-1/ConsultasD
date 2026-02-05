@@ -8,4 +8,4 @@ Route::get('/', function () {
     return redirect()->route('consultas.dni');
 });
 
-Route::resource('personas', PersonaController::class);
+Route::resource('personas', PersonaController::class)->except(['index']);

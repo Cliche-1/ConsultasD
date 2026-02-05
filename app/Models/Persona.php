@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Persona extends Model
 {
     protected $table = 'personas';
-    protected $fillable = ['dni', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'distrito_id'];
+    protected $fillable = ['dni', 'nombres', 'apellido_paterno', 'apellido_materno', 'distrito_id'];
 
-    public function departamento(): BelongsTo
+    public function distrito(): BelongsTo
     {
-        return $this->belongsTo(Departamento::class, 'distrito_id');
+        return $this->belongsTo(Distrito::class, 'distrito_id');
     }
 }

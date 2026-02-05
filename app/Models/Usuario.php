@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Usuario extends Model
 {
     protected $table = 'usuarios';
-    protected $fillable = ['usuarios'];
+    protected $fillable = ['nombre_usuario', 'email', 'activo'];
 
-    public function departamentos(): HasMany
+    public function distritos(): HasMany
     {
-        return $this->hasMany(Departamento::class, 'usuario_id');
+        return $this->hasMany(Distrito::class, 'usuario_id');
     }
 }

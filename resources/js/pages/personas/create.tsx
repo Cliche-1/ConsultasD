@@ -11,34 +11,29 @@ export default function Create({ departamentos }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         dni: '',
         nombres: '',
-        apellidoPaterno: '',
-        apellidoMaterno: '',
+        apellido_paterno: '',
+        apellido_materno: '',
         distrito_id: '',
     });
 
     const [selectedDpto, setSelectedDpto] = useState('');
     const [selectedProv, setSelectedProv] = useState('');
 
-    // Extraer departamentos únicos
     const uniqueDptos = useMemo(() => {
-        return [...new Set(departamentos.map((d) => d.departamento))].sort();
+        return departamentos.map(d => d.nombre).sort();
     }, [departamentos]);
 
-    // Filtrar provincias basadas en el departamento seleccionado
     const filteredProvs = useMemo(() => {
         if (!selectedDpto) return [];
-        const provs = departamentos
-            .filter((d) => d.departamento === selectedDpto)
-            .map((d) => d.provincia);
-        return [...new Set(provs)].sort();
+        const dpto = departamentos.find(d => d.nombre === selectedDpto);
+        return dpto?.provincias?.map(p => p.nombre).sort() || [];
     }, [selectedDpto, departamentos]);
 
-    // Filtrar distritos basados en la provincia seleccionada
     const filteredDistritos = useMemo(() => {
         if (!selectedProv) return [];
-        return departamentos
-            .filter((d) => d.departamento === selectedDpto && d.provincia === selectedProv)
-            .sort((a, b) => a.distrito.localeCompare(b.distrito));
+        const dpto = departamentos.find(d => d.nombre === selectedDpto);
+        const prov = dpto?.provincias?.find(p => p.nombre === selectedProv);
+        return prov?.distritos?.sort((a, b) => a.nombre.localeCompare(b.nombre)) || [];
     }, [selectedProv, selectedDpto, departamentos]);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -93,12 +88,12 @@ export default function Create({ departamentos }: Props) {
                                 type="text"
                                 placeholder="Primer apellido"
                                 className={`w-full p-3 border rounded-lg focus:ring-2 outline-none transition-all shadow-sm ${
-                                    errors.apellidoPaterno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
+                                    errors.apellido_paterno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
                                 }`}
-                                value={data.apellidoPaterno}
-                                onChange={(e) => setData('apellidoPaterno', e.target.value)}
+                                value={data.apellido_paterno}
+                                onChange={(e) => setData('apellido_paterno', e.target.value)}
                             />
-                            {errors.apellidoPaterno && <p className="text-red-500 text-xs font-medium">{errors.apellidoPaterno}</p>}
+                            {errors.apellido_paterno && <p className="text-red-500 text-xs font-medium">{errors.apellido_paterno}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Apellido Materno</label>
@@ -106,12 +101,12 @@ export default function Create({ departamentos }: Props) {
                                 type="text"
                                 placeholder="Segundo apellido"
                                 className={`w-full p-3 border rounded-lg focus:ring-2 outline-none transition-all shadow-sm ${
-                                    errors.apellidoMaterno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
+                                    errors.apellido_materno ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-blue-200'
                                 }`}
-                                value={data.apellidoMaterno}
-                                onChange={(e) => setData('apellidoMaterno', e.target.value)}
+                                value={data.apellido_materno}
+                                onChange={(e) => setData('apellido_materno', e.target.value)}
                             />
-                            {errors.apellidoMaterno && <p className="text-red-500 text-xs font-medium">{errors.apellidoMaterno}</p>}
+                            {errors.apellido_materno && <p className="text-red-500 text-xs font-medium">{errors.apellido_materno}</p>}
                         </div>
                     </div>
 
@@ -130,8 +125,8 @@ export default function Create({ departamentos }: Props) {
                                     }}
                                 >
                                     <option value="">Seleccione</option>
-                                    {uniqueDptos.map((dpto) => (
-                                        <option key={dpto} value={dpto}>{dpto}</option>
+                                    {uniqueDptos.map((nombre) => (
+                                        <option key={nombre} value={nombre}>{nombre}</option>
                                     ))}
                                 </select>
                             </div>
@@ -147,8 +142,8 @@ export default function Create({ departamentos }: Props) {
                                     }}
                                 >
                                     <option value="">Seleccione</option>
-                                    {filteredProvs.map((prov) => (
-                                        <option key={prov} value={prov}>{prov}</option>
+                                    {filteredProvs.map((nombre) => (
+                                        <option key={nombre} value={nombre}>{nombre}</option>
                                     ))}
                                 </select>
                             </div>
@@ -164,7 +159,7 @@ export default function Create({ departamentos }: Props) {
                                 >
                                     <option value="">Seleccione</option>
                                     {filteredDistritos.map((dist) => (
-                                        <option key={dist.id} value={dist.id}>{dist.distrito}</option>
+                                        <option key={dist.id} value={dist.id}>{dist.nombre}</option>
                                     ))}
                                 </select>
                                 {errors.distrito_id && <p className="text-red-500 text-[10px] font-medium">{errors.distrito_id}</p>}

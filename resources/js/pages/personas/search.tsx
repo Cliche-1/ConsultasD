@@ -1,5 +1,7 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmModal from '@/components/ConfirmModal';
 import { Persona } from '@/types/models';
 
 interface Props {
@@ -14,10 +16,25 @@ export default function Search({ persona, filters }: Props) {
         dni: filters.dni || '',
     });
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         get('/consultas/dni', {
             preserveState: true,
+        });
+    };
+
+    const handleDelete = () => {
+        if (!persona) return;
+        
+        setIsDeleting(true);
+        router.delete(`/personas/${persona.id}`, {
+            onFinish: () => {
+                setIsDeleting(false);
+                setIsDeleteModalOpen(false);
+            },
         });
     };
 
@@ -72,26 +89,42 @@ export default function Search({ persona, filters }: Props) {
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-xs font-semibold text-gray-400 uppercase">Apellido Paterno</p>
-                                    <p className="text-lg font-bold text-gray-900">{persona.apellidoPaterno}</p>
+                                    <p className="text-lg font-bold text-gray-900">{persona.apellido_paterno}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-xs font-semibold text-gray-400 uppercase">Apellido Materno</p>
-                                    <p className="text-lg font-bold text-gray-900">{persona.apellidoMaterno}</p>
+                                    <p className="text-lg font-bold text-gray-900">{persona.apellido_materno}</p>
                                 </div>
                             </div>
-                            <div className="bg-blue-50/50 rounded-lg p-4 grid grid-cols-3 gap-4 border border-blue-100">
+                            <div className="bg-blue-50/50 rounded-lg p-4 grid grid-cols-3 gap-4 border border-blue-100 mb-6">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-bold text-blue-400 uppercase">Departamento</p>
-                                    <p className="text-sm font-semibold text-blue-900">{persona.departamento?.departamento}</p>
+                                    <p className="text-sm font-semibold text-blue-900">{persona.distrito?.provincia?.departamento?.nombre}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-bold text-blue-400 uppercase">Provincia</p>
-                                    <p className="text-sm font-semibold text-blue-900">{persona.departamento?.provincia}</p>
+                                    <p className="text-sm font-semibold text-blue-900">{persona.distrito?.provincia?.nombre}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-bold text-blue-400 uppercase">Distrito</p>
-                                    <p className="text-sm font-semibold text-blue-900">{persona.departamento?.distrito}</p>
+                                    <p className="text-sm font-semibold text-blue-900">{persona.distrito?.nombre}</p>
                                 </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 border-t pt-4">
+                                <Link
+                                    href={`/personas/${persona.id}/edit`}
+                                    className="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center gap-2"
+                                >
+
+                                    Editar
+                                </Link>
+                                <button
+                                    onClick={() => setIsDeleteModalOpen(true)}
+                                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center gap-2"
+                                >
+                                    Eliminar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -105,10 +138,19 @@ export default function Search({ persona, filters }: Props) {
                         <svg className="w-12 h-12 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <p className="font-medium">Consulta</p>
+                        <p className="font-medium">Esperando consulta...</p>
                     </div>
                 )}
             </div>
+
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="Eliminar Registro"
+                message="¿Estás seguro de que deseas eliminar a esta persona? Esta acción no se puede deshacer."
+                onConfirm={handleDelete}
+                onCancel={() => setIsDeleteModalOpen(false)}
+                processing={isDeleting}
+            />
         </AppLayout>
     );
 }
